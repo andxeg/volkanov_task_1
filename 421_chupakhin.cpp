@@ -12,15 +12,54 @@
 #include <cstdlib>
 #include <limits.h>
 #include <string.h>
+#include <vector>
 
 #define fLines 9
 #define gLines 13
 
 //GLOBAL VARIABLES -> <FILENAME< <INPUT PARAMETERS FOR PROCEDURE F AND G> <COUNT FLAG>
+//F_Procedure lines - {0}, G_Procedure lines - {1}
+//Implementation of the program is represented by the binary vector
+//Weight of the vector is a constant. Weight == gLines
 std::string filename("states.txt");
 int f_a, f_b, g_a, g_b;
 int count = 0;
+uint START_PATH;// 0000000001111111111111
+uint END_PATH;  // 1111111111111000000000
 //
+
+void initPathes() {
+    START_PATH = 1;
+    for (int i = 0; i < gLines-1; ++i ) {
+        START_PATH = START_PATH << 1;
+        START_PATH |= 1;
+    }
+    END_PATH = START_PATH << fLines;
+}
+
+int correctTrace( const uint & trace ) {
+    //Trace is correct if weight == gLines and length == (fLines + gLines)
+    return 1;
+}
+
+class F {
+public:
+    int ip;//instruction pointer
+public:
+    void execute(State & curr_state) {
+        //execute operation in ip -> change State and change ip
+        // curr_state -> execute command -> new_state and new valure in ip
+    }
+};
+
+class G {
+public:
+    int ip;//instruction pointer
+public:
+    void execute(State &) {
+
+    }
+};
 
 class State {
 public:
@@ -28,21 +67,73 @@ public:
     int f_y;
     int g_x;
     int g_y;
+    int h;
     int c_f;
     int c_g;
-    std::vector<int> init;//array for initialization control of the local variables
+    std::vector<int> init;//array for initialization control of the local variables { h, f_x, f_y, g_x, g_y }
 public:
-    State(const int & x_f = 0, const int & y_f = 0, const int & x_g = 0, const int & y_g = 0,
-          const int & f_c = 0, const int & g_c = 0):
-    f_x(x_f), f_y(y_f), g_x(x_g), g_y(y_g), c_f(f_c), c_g(g_c)
+    State( const int & x_f = 0, const int & y_f = 0, const int & x_g = 0, const int & y_g = 0, const int & h_fg = 0,
+          const int & f_c = 0, const int & g_c = 0 ):
+    f_x(x_f), f_y(y_f), g_x(x_g), g_y(y_g), h(h_fg), c_f(f_c), c_g(g_c)
     {
-        init = std::vector<int>(4,0);
+        init = std::vector<int>(5,0);
     }
 
     ~State(){}
 
-    void print(){}
+    void print() {
+        std::cout <<
+        c_f << "  " <<
+        c_g << "  ";
+        if (init[0])
+            std::cout << h << "  ";
+        else
+            std::cout << "#" << "  ";
+
+        if (init[1])
+            std::cout << f_x << "  ";
+        else
+            std::cout << "#" << "  ";
+
+        if (init[2])
+            std::cout << f_y << "  ";
+        else
+            std::cout << "#" << "  ";
+
+        if (init[3])
+            std::cout << g_x << "  ";
+        else
+            std::cout << "#" << "  ";
+
+        if (init[4])
+            std::cout << g_y;
+        else
+            std::cout << "#";
+
+        std::cout << std::endl;
+    }
 };
+
+void implementTrace(const uint & trace, std::vector<State> & states) {
+    //Passing nulles and ones while implement trace
+    char one_count = 0;
+    char null_count = 0;
+    //
+    //create new procedures F and G
+    F f; // {3}
+    G g; // {4}
+    //
+    //Init state. All variables have unknown values. Only c_f == 0 and c_g == 0
+    State initState;
+    //
+    while ( g.ip < gLines || f.ip < fLines ) {
+        //take bit with number == ( one_count + null_count)
+        //if bit == 0 then f.execute
+        //if bit == 1 then g.execute
+        //print new state
+    }
+
+}
 
 int strToInt( const char * number, int & result ) {
     char* end_ptr;
@@ -155,6 +246,22 @@ int main( int argc, char **argv ) {
     //Print input parameters for check
     std::cout << " f_a, f_b, g_a, g_b : "  << f_a << ", "<< f_b << ", " << g_a << ", " << g_b << std::endl;
     std::cout << " Count flag -> "  << count << " Filename -> " << filename << std::endl;
+    //
+
+    //Main Algorithm
+    //For input parameters look through all the routes of Program implementation
+    //Initialize start and end path
+    initPathes();
+    std::cout << " START_PATH -> "  << START_PATH << " END_PATH -> " << END_PATH << std::endl;
+    //
+    //Set of states
+    std::vector<State> states;
+    //
+    for ( uint trace = START_PATH; trace <= END_PATH; trace++ ) {
+        if ( !correctTrace(trace) ) // {1}
+            continue;
+        implementTrace(trace, states); // {2}
+    }
     //
     return 0;
 }
