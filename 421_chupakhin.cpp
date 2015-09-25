@@ -18,7 +18,7 @@
 #define gLines 13
 
 //GLOBAL VARIABLES -> <FILENAME< <INPUT PARAMETERS FOR PROCEDURE F AND G> <COUNT FLAG>
-//F_Procedure lines - {0}, G_Procedure lines - {1}
+//F_Procedure line - {0}, G_Procedure line - {1}
 //Implementation of the program is represented by the binary vector
 //Weight of the vector is a constant. Weight == gLines
 std::string filename("states.txt");
@@ -39,25 +39,94 @@ void initPathes() {
 
 int correctTrace( const uint & trace ) {
     //Trace is correct if weight == gLines and length == (fLines + gLines)
-    return 1;
+    char ones = 0;
+    for (uint i = 0; i < (fLines + gLines); i++){
+        if ( (trace >> i) & 1 )
+            ones += 1;
+    }
+    if ( ones == gLines )
+        return 1;
+
+    return 0;
 }
 
-class F {
+
+class State;
+
+class Procedure {
 public:
     int ip;//instruction pointer
 public:
-    void execute(State & curr_state) {
-        //execute operation in ip -> change State and change ip
-        // curr_state -> execute command -> new_state and new valure in ip
-    }
+    Procedure(const int & instructionPointer = 0):
+            ip(instructionPointer)
+    {}
+
+    ~Procedure() {}
+    virtual void execute(State & curr_state, const int & currComm) const = 0;
 };
 
-class G {
-public:
-    int ip;//instruction pointer
-public:
-    void execute(State &) {
 
+class F: public Procedure {
+public:
+    F(const int & instructionPointer = 0):
+            Procedure(instructionPointer)
+    {}
+
+    ~F() {}
+    void execute(State & curr_state, const int & currComm) const {
+        //execute operation in ip -> change State and change ip
+        // curr_state -> execute command -> new_state and new value in ip
+        // if currComm < ip therefore not implement string
+        if ( ip > currComm )
+            return;
+
+        //else only one the rest variant currComm == ip  => implement string
+        switch (ip) {
+            case  '0':
+
+                break;
+            case  '1':
+                break;
+            case  '2':
+                break;
+            case  '3':
+                break;
+            case  '4':
+                break;
+            case  '5':
+                break;
+            case  '6':
+                break;
+            case  '7':
+                break;
+            case  '8':
+                break;
+            default:
+                std::cout <<  "Not found appropriate command" << std::endl;
+                break;
+        }
+        //
+        //add current state after string implementation in
+
+        //
+    }
+    void print() {
+        std::cout <<  ip << std::endl;
+    }
+
+};
+
+class G: public Procedure {
+public:
+    G(const int & instructionPointer = 0)
+    :Procedure(instructionPointer)
+    {}
+
+    ~G() {}
+
+    void execute(State & curr_state, const int & currComm) const {
+        if ( ip > currComm )
+            return;
     }
 };
 
@@ -112,25 +181,53 @@ public:
 
         std::cout << std::endl;
     }
+    bool operator=() const {
+        return true;
+    }
 };
+
+
+void addState(std::vector<State> & states, const State & state) {
+    uint size = states.size();
+    int flag = 0;
+    for ( uint i = 0; i < size; i++ ) {
+        if ( states[i] == state ) {
+            flag = 1;
+        }
+    }
+    if ( !flag )
+        states.push_back(state);
+}
 
 void implementTrace(const uint & trace, std::vector<State> & states) {
     //Passing nulles and ones while implement trace
-    char one_count = 0;
-    char null_count = 0;
+    //max one_count  == gLines
+    //max null_count  == fLines
+    int one_count = 0;
+    int null_count = 0;
     //
-    //create new procedures F and G
+    //create new procedures F and G with instruction pointer == 0
     F f; // {3}
     G g; // {4}
     //
     //Init state. All variables have unknown values. Only c_f == 0 and c_g == 0
-    State initState;
+    State state;
     //
     while ( g.ip < gLines || f.ip < fLines ) {
         //take bit with number == ( one_count + null_count)
         //if bit == 0 then f.execute
         //if bit == 1 then g.execute
-        //print new state
+        //print new state in execute method if string was implemented
+        //make shift on (one_count + null_count) and take first bit
+        if ( (trace >> (one_count + null_count)) & 1 ){
+            g.execute(state, one_count); // {5}
+            addState(states, state);
+            one_count += 1;
+        } else {
+            f.execute(state, null_count); // {6}
+            addState(states, state);
+            null_count += 1;
+        }
     }
 
 }
@@ -258,7 +355,7 @@ int main( int argc, char **argv ) {
     std::vector<State> states;
     //
     for ( uint trace = START_PATH; trace <= END_PATH; trace++ ) {
-        if ( !correctTrace(trace) ) // {1}
+        if ( !correctTrace(trace) )
             continue;
         implementTrace(trace, states); // {2}
     }
