@@ -50,86 +50,6 @@ int correctTrace( const uint & trace ) {
     return 0;
 }
 
-
-class State;
-
-class Procedure {
-public:
-    int ip;//instruction pointer
-public:
-    Procedure(const int & instructionPointer = 0):
-            ip(instructionPointer)
-    {}
-
-    ~Procedure() {}
-    virtual void execute(State & curr_state, const int & currComm) const = 0;
-};
-
-
-class F: public Procedure {
-public:
-    F(const int & instructionPointer = 0):
-            Procedure(instructionPointer)
-    {}
-
-    ~F() {}
-    void execute(State & curr_state, const int & currComm) const {
-        //execute operation in ip -> change State and change ip
-        // curr_state -> execute command -> new_state and new value in ip
-        // if currComm < ip therefore not implement string
-        if ( ip > currComm )
-            return;
-
-        //else only one the rest variant currComm == ip  => implement string
-        switch (ip) {
-            case  '0':
-
-                break;
-            case  '1':
-                break;
-            case  '2':
-                break;
-            case  '3':
-                break;
-            case  '4':
-                break;
-            case  '5':
-                break;
-            case  '6':
-                break;
-            case  '7':
-                break;
-            case  '8':
-                break;
-            default:
-                std::cout <<  "Not found appropriate command" << std::endl;
-                break;
-        }
-        //
-        //add current state after string implementation in
-
-        //
-    }
-    void print() {
-        std::cout <<  ip << std::endl;
-    }
-
-};
-
-class G: public Procedure {
-public:
-    G(const int & instructionPointer = 0)
-    :Procedure(instructionPointer)
-    {}
-
-    ~G() {}
-
-    void execute(State & curr_state, const int & currComm) const {
-        if ( ip > currComm )
-            return;
-    }
-};
-
 class State {
 public:
     int f_x;
@@ -142,8 +62,8 @@ public:
     std::vector<int> init;//array for initialization control of the local variables { h, f_x, f_y, g_x, g_y }
 public:
     State( const int & x_f = 0, const int & y_f = 0, const int & x_g = 0, const int & y_g = 0, const int & h_fg = 0,
-          const int & f_c = 0, const int & g_c = 0 ):
-    f_x(x_f), f_y(y_f), g_x(x_g), g_y(y_g), h(h_fg), c_f(f_c), c_g(g_c)
+           const int & f_c = 0, const int & g_c = 0 ):
+            f_x(x_f), f_y(y_f), g_x(x_g), g_y(y_g), h(h_fg), c_f(f_c), c_g(g_c)
     {
         init = std::vector<int>(5,0);
     }
@@ -151,9 +71,23 @@ public:
     ~State(){}
 
     void print() {
+        int fIp, gIp;
+        if ( c_f == 6 || c_f == 7 )
+            fIp +=1;
+        if ( c_f == 8 )
+            fIp = 12;
+
+        if ( c_g >= 6 && c_g <= 11 )
+            gIp +=1;
+
+        if ( c_g == 12 )
+            gIp = 18;
+
+        //Print without convertion
         std::cout <<
         c_f << "  " <<
         c_g << "  ";
+
         if (init[0])
             std::cout << h << "  ";
         else
@@ -181,11 +115,199 @@ public:
 
         std::cout << std::endl;
     }
-    bool operator=() const {
-        return true;
+    bool operator==( const State & right) {
+        return ( this->c_f == right.c_f ) && ( this->c_g == right.c_g ) &&
+                ( ( this->init[0] == right.init[0] ) && ( this->h == right.h ) ) &&
+                ( ( this->init[1] == right.init[1] ) && ( this->f_x == right.f_x ) ) &&
+                ( ( this->init[2] == right.init[2] ) && ( this->f_y == right.f_y ) ) &&
+                ( ( this->init[3] == right.init[3] ) && ( this->g_x == right.g_x ) ) &&
+                ( ( this->init[4] == right.init[4] ) && ( this->g_y == right.g_y ) );
+
     }
 };
 
+class Procedure {
+public:
+    Procedure() {}
+    ~Procedure() {}
+    virtual int execute(State & curr_state, const int & currComm) const = 0;
+};
+
+class F: public Procedure {
+public:
+    F():Procedure() {}
+    ~F() {}
+    int execute(State & curr_state, const int & currComm) const {
+        //execute operation in ip -> change State and change ip
+        // curr_state -> execute command -> new_state and new value in ip
+        // if currComm < ip therefore not implement string
+        if ( curr_state.c_f > currComm )
+            return 0;
+
+        //std::cout << "F::";
+        //else only one the rest variant: currComm == ip  => implement string
+        switch (curr_state.c_f) {
+            case  0:
+                //std::cout << "int x, y" << std::endl;
+                curr_state.c_f = 1;
+                break;
+
+            case  1:
+                //std::cout << "x = 7" << std::endl;
+                curr_state.f_x = 7;
+                curr_state.init[1] = 1;
+                curr_state.c_f = 2;
+                break;
+
+            case  2:
+                //std::cout << "y = 7" << std::endl;
+                curr_state.f_y = 7;
+                curr_state.init[2] = 1;
+                curr_state.c_f = 3;
+                break;
+
+            case  3:
+                //std::cout << "h = 4" << std::endl;
+                curr_state.h = 4;
+                curr_state.init[0] = 1;
+                curr_state.c_f = 4;
+                break;
+
+            case  4:
+                //std::cout << "if ( h < b )" << std::endl;
+                ( curr_state.h < f_b) ? curr_state.c_f = 5 : curr_state.c_f = 7;
+                break;
+
+            case  5:
+                //if ( h > 6 )  in all cases TRUE
+                //std::cout << "if ( h > 6 )" << std::endl;
+                curr_state.c_f = 6;
+                break;
+
+            case  6:
+                //std::cout << "x = 2" << std::endl;
+                curr_state.f_x = 2;
+                curr_state.init[1] = 1;
+                curr_state.c_f = 7;
+                break;
+
+            case  7:
+                //std::cout << "if ( h > y )" << std::endl;
+                curr_state.c_f = 8;
+                break;
+
+            case  8:
+                //end of the procedure
+                break;
+
+            default:
+                std::cout <<  "Not found appropriate command" << std::endl;
+                break;
+        }
+
+        return 1;
+    }
+};
+
+class G: public Procedure {
+public:
+    G():Procedure() {}
+    ~G() {}
+    int execute(State & curr_state, const int & currComm) const {
+        if ( curr_state.c_g > currComm )
+            return 0;
+
+        //std::cout << "G::";
+        //else only one the rest variant: currComm == ip  => implement string
+        switch (curr_state.c_g) {
+            case  0:
+                //std::cout << "int x, y;" << std::endl;
+                curr_state.c_g = 1;
+                break;
+
+            case  1:
+                //std::cout << "x = 1;" << std::endl;
+                curr_state.g_x = 1;
+                curr_state.init[3] = 1;
+                curr_state.c_g = 2;
+                break;
+
+            case  2:
+                //std::cout << "y = 10" << std::endl;
+                curr_state.g_y = 10;
+                curr_state.init[4] = 1;
+                curr_state.c_g = 3;
+                break;
+
+            case  3:
+                //std::cout << "h = 1" << std::endl;
+                curr_state.h = 1;
+                curr_state.init[0] = 1;
+                curr_state.c_g = 4;
+                break;
+
+            case  4:
+                //if ( x < 10 ) in all cases TRUE can write only curr_state.c_g = 5
+                //std::cout << "if ( x < 10 )" << std::endl;
+                ( curr_state.g_x < 10 ) ? curr_state.c_g = 5 : curr_state.c_g = 7;
+                break;
+
+            case  5:
+                //if ( h > y ) in all cases FALSE can write only curr_state.c_g = 6
+                //std::cout << "if ( h > y )" << std::endl;
+                curr_state.c_g = 6;
+                break;
+
+            case  6:
+                //std::cout << "x = 0" << std::endl;
+                curr_state.g_x = 0;
+                curr_state.init[3] = 1;
+                curr_state.c_g = 7;
+                break;
+
+            case  7:
+                //std::cout << "y = 7" << std::endl;
+                curr_state.g_y = 7;
+                curr_state.init[4] = 1;
+                curr_state.c_g = 8;
+                break;
+
+            case  8:
+                //std::cout << "x = 6" << std::endl;
+                curr_state.g_x = 6;
+                curr_state.init[3] = 1;
+                curr_state.c_g = 9;
+                break;
+
+            case  9:
+                //while ( x < 9 ) in all cases TRUE can write only curr_state.c_g = 10
+                //std::cout << "while ( x < 9 )" << std::endl;
+                ( curr_state.g_x < 9 ) ? curr_state.c_g = 10 : curr_state.c_g = 12;
+                break;
+
+            case  10:
+                //if ( h > 0 ) in all cases TRUE
+                //std::cout << "if ( h > 0 )" << std::endl;
+                curr_state.c_g = 11;
+                break;
+
+            case  11:
+                //std::cout << "break" << std::endl;
+                curr_state.c_g = 12;
+                break;
+
+            case  12:
+                //end of the procedure
+                break;
+
+            default:
+                std::cout <<  "Not found appropriate command" << std::endl;
+                break;
+        }
+
+        return 1;
+    }
+};
 
 void addState(std::vector<State> & states, const State & state) {
     uint size = states.size();
@@ -193,8 +315,10 @@ void addState(std::vector<State> & states, const State & state) {
     for ( uint i = 0; i < size; i++ ) {
         if ( states[i] == state ) {
             flag = 1;
+            break;
         }
     }
+
     if ( !flag )
         states.push_back(state);
 }
@@ -206,30 +330,44 @@ void implementTrace(const uint & trace, std::vector<State> & states) {
     int one_count = 0;
     int null_count = 0;
     //
-    //create new procedures F and G with instruction pointer == 0
-    F f; // {3}
-    G g; // {4}
+    //create new procedures F and G
+    F f;
+    G g;
     //
     //Init state. All variables have unknown values. Only c_f == 0 and c_g == 0
     State state;
+    addState(states, state);
     //
-    while ( g.ip < gLines || f.ip < fLines ) {
+    while ( (one_count + null_count) < int(fLines + gLines) ) {
+        //std::cout << one_count << " " << null_count << " " << int(fLines + gLines) << std::endl;
+
         //take bit with number == ( one_count + null_count)
         //if bit == 0 then f.execute
         //if bit == 1 then g.execute
         //print new state in execute method if string was implemented
         //make shift on (one_count + null_count) and take first bit
         if ( (trace >> (one_count + null_count)) & 1 ){
-            g.execute(state, one_count); // {5}
-            addState(states, state);
+            if ( g.execute(state, one_count) ) // {5}
+                addState(states, state);
             one_count += 1;
         } else {
-            f.execute(state, null_count); // {6}
-            addState(states, state);
+            if ( f.execute(state, null_count) ) // {6}
+                addState(states, state);
             null_count += 1;
         }
     }
+}
 
+void printTrace( const uint & trace) {
+    int k = fLines + gLines;
+    std::string result = std::string("");
+    for ( int i = k - 1; i >=0 ; --i ) {
+        if ( ( trace >> i ) & 1 )
+            std::cout << '1';
+        else
+            std::cout << '0';
+    }
+    std::cout << std::endl;
 }
 
 int strToInt( const char * number, int & result ) {
@@ -354,11 +492,30 @@ int main( int argc, char **argv ) {
     //Set of states
     std::vector<State> states;
     //
-    for ( uint trace = START_PATH; trace <= END_PATH; trace++ ) {
+
+    //
+//    uint END_PATH_NEW = START_PATH << 9;
+//    std::cout << END_PATH_NEW << std::endl;
+//    printTrace( END_PATH_NEW );
+
+
+//    std::cout << "---------------" << std::endl;
+//    std::cout << START_PATH << std::endl;
+//    printTrace( START_PATH );
+//    std::cout << END_PATH << std::endl;
+//    printTrace( END_PATH );
+//    std::cout << "---------------" << std::endl;
+    //
+    for ( uint trace = START_PATH; trace <= /*END_PATH_NEW*/END_PATH; trace++ ) {
         if ( !correctTrace(trace) )
             continue;
+        //printTrace( trace );
         implementTrace(trace, states); // {2}
     }
+
+    std::cout << "c_f" << "  " << "c_g" << "  " << "h" << "  " << "f.x" << "  " << "f.y" << "  " << "g.x" << "  " << "g.y" << std::endl;
+    for ( uint i = 0; i < states.size(); ++i )
+        states[i].print();
     //
     return 0;
 }
