@@ -5,14 +5,13 @@
  * поток вывода количество достижимых состояний.
 */
 
-
 #include <iostream>
 #include <string>
 #include <vector>
 #include <cstdlib>
 #include <limits.h>
 #include <string.h>
-#include <vector>
+#include <fstream>
 
 #define fLines 9
 #define gLines 13
@@ -70,50 +69,53 @@ public:
 
     ~State(){}
 
-    void print() {
-        int fIp, gIp;
-        if ( c_f == 6 || c_f == 7 )
-            fIp +=1;
-        if ( c_f == 8 )
-            fIp = 12;
-
-        if ( c_g >= 6 && c_g <= 11 )
-            gIp +=1;
-
-        if ( c_g == 12 )
-            gIp = 18;
+    void print( std::ofstream & out) {
+        int fIp = c_f;
+        int gIp = c_g;
 
         //Print without convertion
-        std::cout <<
-        c_f << "  " <<
-        c_g << "  ";
+//        if ( c_f == 6 || c_f == 7 )
+//            fIp +=1;
+//        if ( c_f == 8 )
+//            fIp = 12;
+//
+//        if ( c_g >= 6 && c_g <= 11 )
+//            gIp +=1;
+//
+//        if ( c_g == 12 )
+//            gIp = 18;
+
+
+        out <<
+        fIp << "  " <<
+        gIp << "  ";
 
         if (init[0])
-            std::cout << h << "  ";
+            out << h << "  ";
         else
-            std::cout << "#" << "  ";
+            out << "#" << "  ";
 
         if (init[1])
-            std::cout << f_x << "  ";
+            out << f_x << "  ";
         else
-            std::cout << "#" << "  ";
+            out << "#" << "  ";
 
         if (init[2])
-            std::cout << f_y << "  ";
+            out << f_y << "  ";
         else
-            std::cout << "#" << "  ";
+            out << "#" << "  ";
 
         if (init[3])
-            std::cout << g_x << "  ";
+            out << g_x << "  ";
         else
-            std::cout << "#" << "  ";
+            out << "#" << "  ";
 
         if (init[4])
-            std::cout << g_y;
+            out << g_y;
         else
-            std::cout << "#";
+            out << "#";
 
-        std::cout << std::endl;
+        out << std::endl;
     }
     bool operator==( const State & right) {
         return ( this->c_f == right.c_f ) && ( this->c_g == right.c_g ) &&
@@ -370,6 +372,30 @@ void printTrace( const uint & trace) {
     std::cout << std::endl;
 }
 
+int printStates(std::vector<State> & states) {
+    std::cout <<  "Feasible states -> " << states.size() << std::endl;
+    if ( count ) {
+        std::cout << "All feasible states -> 25272 * 2^128" << std::endl;
+        std::cout << "All potential states -> 247 * 2^288" << std::endl;
+    }
+
+    //Write states in file <filename>
+    std::ofstream fout;
+    fout.open(filename, std::ios_base::out |  std::ios_base::trunc);
+    if ( !fout.is_open() ) {
+        std::cout << "Error in opening file" << std::endl;
+        return 0;
+    }
+
+    fout << "c_f" << "  " << "c_g" << "  " << "h" << "  " << "f.x" << "  " << "f.y" << "  " << "g.x" << "  " << "g.y" << std::endl;
+    for ( uint i = 0; i < states.size(); ++i )
+        states[i].print(fout);
+
+    fout.close();
+
+    return 1;
+}
+
 int strToInt( const char * number, int & result ) {
     char* end_ptr;
     long val = strtol(number, &end_ptr, 10);
@@ -455,17 +481,17 @@ int parserInputParameters( int argc, char ** argv ) {
         }
     }
     //
-    std::cout << "End of parserInputParameters" << std::endl;
+    //std::cout << "End of parserInputParameters" << std::endl;
     return 1;
 }
 
 int main( int argc, char **argv ) {
     /*имя_программы <f_a> <f_b> <g_a> <g_b>
-            -file имя_файла - запись состояний в указанный файл,
-    -count - вывод общего количества состояний программы в стандартный поток вывода.
-            При запуске без параметров (либо с недостаточным количеством параметров)
-    программа должна выводить информацию о программе, авторе, годе написания и параметрах запуска.
-     формат вывода в файл c_f, c_g, h, f.x, f.y, g.x, g.y.
+     * [-file имя_файла] - запись состояний в указанный файл,
+     * [-count] - вывод общего количества состояний программы в стандартный поток вывода.
+     * При запуске без параметров (либо с недостаточным количеством параметров)
+     * программа должна выводить информацию о программе, авторе, годе написания и параметрах запуска.
+     * Формат вывода в файл c_f, c_g, h, f.x, f.y, g.x, g.y.
      */
     if (!parserInputParameters(argc, argv)) {
         std::cerr << "Error in the input parameters" << std::endl;
@@ -479,25 +505,21 @@ int main( int argc, char **argv ) {
 
     //If parsing true therefore all variables f_a, f_b, g_a, g_b was initialized
     //Print input parameters for check
-    std::cout << " f_a, f_b, g_a, g_b : "  << f_a << ", "<< f_b << ", " << g_a << ", " << g_b << std::endl;
-    std::cout << " Count flag -> "  << count << " Filename -> " << filename << std::endl;
+    //std::cout << " f_a, f_b, g_a, g_b : "  << f_a << ", "<< f_b << ", " << g_a << ", " << g_b << std::endl;
+    //std::cout << " Count flag -> "  << count << " Filename -> " << filename << std::endl;
     //
 
     //Main Algorithm
     //For input parameters look through all the routes of Program implementation
     //Initialize start and end path
     initPathes();
-    std::cout << " START_PATH -> "  << START_PATH << " END_PATH -> " << END_PATH << std::endl;
+    //std::cout << " START_PATH -> "  << START_PATH << " END_PATH -> " << END_PATH << std::endl;
     //
     //Set of states
     std::vector<State> states;
-    //
-
-    //
 //    uint END_PATH_NEW = START_PATH << 9;
 //    std::cout << END_PATH_NEW << std::endl;
 //    printTrace( END_PATH_NEW );
-
 
 //    std::cout << "---------------" << std::endl;
 //    std::cout << START_PATH << std::endl;
@@ -513,9 +535,9 @@ int main( int argc, char **argv ) {
         implementTrace(trace, states); // {2}
     }
 
-    std::cout << "c_f" << "  " << "c_g" << "  " << "h" << "  " << "f.x" << "  " << "f.y" << "  " << "g.x" << "  " << "g.y" << std::endl;
-    for ( uint i = 0; i < states.size(); ++i )
-        states[i].print();
+    if ( !printStates(states) )
+        return 1;
+
     //
     return 0;
 }
