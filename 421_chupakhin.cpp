@@ -74,16 +74,16 @@ public:
         int gIp = c_g;
 
         //Print without convertion
-//        if ( c_f == 6 || c_f == 7 )
-//            fIp +=1;
-//        if ( c_f == 8 )
-//            fIp = 12;
-//
-//        if ( c_g >= 6 && c_g <= 11 )
-//            gIp +=1;
-//
-//        if ( c_g == 12 )
-//            gIp = 18;
+        if ( c_f == 6 || c_f == 7 )
+            fIp +=1;
+        if ( c_f == 8 )
+            fIp = 12;
+
+        if ( c_g >= 6 && c_g <= 11 )
+            gIp +=1;
+
+        if ( c_g == 12 )
+            gIp = 18;
 
 
         out <<
