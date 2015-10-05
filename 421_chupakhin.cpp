@@ -503,30 +503,8 @@ int main( int argc, char **argv ) {
         return 1;
     }
 
-    //If parsing true therefore all variables f_a, f_b, g_a, g_b was initialized
-    //Print input parameters for check
-    //std::cout << " f_a, f_b, g_a, g_b : "  << f_a << ", "<< f_b << ", " << g_a << ", " << g_b << std::endl;
-    //std::cout << " Count flag -> "  << count << " Filename -> " << filename << std::endl;
-    //
-
-    //Main Algorithm
-    //For input parameters look through all the routes of Program implementation
-    //Initialize start and end path
     initPathes();
-    //std::cout << " START_PATH -> "  << START_PATH << " END_PATH -> " << END_PATH << std::endl;
-    //
-    //Set of states
     std::vector<State> states;
-//    uint END_PATH_NEW = START_PATH << 9;
-//    std::cout << END_PATH_NEW << std::endl;
-//    printTrace( END_PATH_NEW );
-
-//    std::cout << "---------------" << std::endl;
-//    std::cout << START_PATH << std::endl;
-//    printTrace( START_PATH );
-//    std::cout << END_PATH << std::endl;
-//    printTrace( END_PATH );
-//    std::cout << "---------------" << std::endl;
     //
     for ( uint trace = START_PATH; trace <= /*END_PATH_NEW*/END_PATH; trace++ ) {
         if ( !correctTrace(trace) )
